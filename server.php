@@ -1,36 +1,30 @@
 <?php
 
 /*****
- * Copied from https://bot-wechat-edfward.c9users.io/
+ * Copied from https://easywechat.org/zh-cn/docs/tutorial.html
  *****/
 
-include __DIR__ . '/vendor/autoload.php'; // 引入 composer 入口文件
+include __DIR__ . '/vendor/autoload.php';
 
 use EasyWeChat\Foundation\Application;
 
 $options = [
     'debug'  => true,
-    'app_id' => 'your-app-id',
-    'secret' => 'you-secret',
-    'token'  => 'easywechat',
-
-    // 'aes_key' => null, // 可选
+    'app_id' => getenv('app_id'),
+    'secret' => getenv('secret'),
+    'token'  => getenv('token'),
 
     'log' => [
         'level' => 'debug',
-        'file'  => '/tmp/easywechat.log', // XXX: 绝对路径！！！！
+        'file'  => '/tmp/easywechat.log',
     ],
-
-    //...
 ];
 
 $app = new Application($options);
+$server = $app->server;
+
 
 $server->setMessageHandler(function ($message) {
     return "您好！欢迎关注我!";
 });
-
-$response = $app->server->serve();
-
-// 将响应输出
-return $response; //其它框架：$response->send();
+$server->serve()->send();
