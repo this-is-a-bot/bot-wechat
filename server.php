@@ -5,8 +5,10 @@
  *****/
 
 include __DIR__ . '/vendor/autoload.php';
+include 'steam.php';
 
 use EasyWeChat\Foundation\Application;
+
 
 $options = [
     'debug'  => true,
@@ -25,6 +27,10 @@ $server = $app->server;
 
 
 $server->setMessageHandler(function ($message) {
-    return "您好！欢迎关注我!";
+    if ($message->Content=='Steam Discount'){
+        $response = get_steam_discounts();
+        return $response;
+    } else
+        return "嘿嘿！";
 });
 $server->serve()->send();
