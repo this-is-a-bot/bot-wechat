@@ -1,5 +1,11 @@
 {
+    "name": "this-is-a-bot/bot-wechat",
     "require": {
         "overtrue/wechat": "~3.0"
+    },
+    "autoload": {
+        "psr-4": {
+            "BotWechat\\": "src/"
+        }
     }
 }
