@@ -1,5 +1,4 @@
-<?php
-declare(strict_types=1);
+<?php declare(strict_types=1);
 
 namespace BotWechat\Handler;
 
@@ -40,11 +39,16 @@ abstract class MsgHandler {
 
 class TextMsgHandler extends MsgHandler {
   public function handle() {
-    if (preg_match('/steam.*discount/', strtolower($this->message->Content))) {
+    $content = $this->message->Content;
+    if (preg_match('/steam.*discount/', strtolower($content))) {
       return Steam::getSteamDiscounts();
+    } else if (preg_match('/steam.*feature/', strtolower($content))) {
+      // Extract features, default to windows.
+      preg_match('/mac|linux|win/', $content, $matches);
+      return Steam::getSteamFeaturedGames($matches ? $matches[0] : 'win');
     }
 
-    return new Text(['content' => 'received text: '.$this->message->Content]);
+    return new Text(['content' => 'received text: '.$content]);
   }
 }
 
