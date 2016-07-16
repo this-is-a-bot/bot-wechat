@@ -27,7 +27,7 @@ Redis::init();
 $app = new Application($options);
 $server = $app->server;
 
-$server->setMessageHandler(function ($message) use ($app) {
+$server->setMessageHandler(function ($message) {
   $username = $message->FromUserName;
   $prevState = Redis::getPrevState($username);
   return MsgHandler::handleMessage($message, $prevState);
