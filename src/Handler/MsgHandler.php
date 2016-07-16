@@ -1,7 +1,8 @@
-<?php declare(strict_types=1);
+<?php declare(strict_types = 1);
 
 namespace BotWechat\Handler;
 
+use BotWechat\Tracker\Tracker;
 use EasyWeChat\Message\Text;
 use BotWechat\Steam\Steam;
 
@@ -40,26 +41,40 @@ abstract class MsgHandler {
 class TextMsgHandler extends MsgHandler {
   public function handle() {
     $content = $this->message->Content;
+    // TODO: Do we need more than open ID for the user, like nickname?
+    $user = $this->message->FromUserName;  // Open ID.
+
     if (preg_match('/steam.*discount/', strtolower($content))) {
       return Steam::getSteamDiscounts();
     } else if (preg_match('/steam.*feature/', strtolower($content))) {
       // Extract features, default to windows.
       preg_match('/mac|linux|win/', $content, $matches);
       return Steam::getSteamFeaturedGames($matches ? $matches[0] : 'win');
+    } else {
+      // Trying to recognize the first keyword.
+      $parts = preg_split('/\s+/', $content);
+      switch (strtolower($parts[0])) {  // Wechat doesn't allow send white-space string.
+        case "tt":  // Text-only tracker.
+          return Tracker::relayMessage($user, $content);
+          break;
+        case "t":  // Web-page tracker.
+          return Tracker::getTrackerPage($user);
+          break;
+      }
     }
 
-    return new Text(['content' => 'received text: '.$content]);
+    return new Text(['content' => 'received text: ' . $content]);
   }
 }
 
 class ImageMsgHandler extends MsgHandler {
   public function handle() {
-    return new Text(['content' => 'received image: '.$this->message->PicUrl]);
+    return new Text(['content' => 'received image: ' . $this->message->PicUrl]);
   }
 }
 
 class VoiceMsgHandler extends MsgHandler {
   public function handle() {
-    return new Text(['content' => 'received voice: '.$this->message->MediaId]);
+    return new Text(['content' => 'received voice: ' . $this->message->MediaId]);
   }
 }

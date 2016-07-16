@@ -1,4 +1,7 @@
 # Composer related.
 vendor/
 
+# PhpStorm
+.idea/
+
 *.log
