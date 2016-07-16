@@ -17,7 +17,8 @@ abstract class MsgHandler {
 
   abstract public function handle();
 
-  public static function handleMessage($message) {
+  // TODO: Add state transition. Will do in next diff.
+  public static function handleMessage($message, string $prevState) {
     $handler = NULL;
     switch ($message->MsgType) {
       case 'text':
