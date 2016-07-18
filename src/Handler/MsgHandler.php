@@ -2,48 +2,82 @@
 
 namespace BotWechat\Handler;
 
+use BotWechat\Steam\Steam;
 use BotWechat\Tracker\Tracker;
 use EasyWeChat\Message\Text;
-use BotWechat\Steam\Steam;
 
 
-abstract class MsgHandler {
+/**
+ * Entry point for message handling.
+ */
+class MsgHandler {
 
-  protected $message;
-
-  public function __construct($message) {
-    $this->message = $message;
-  }
-
-  abstract public function handle();
-
-  // TODO: Add state transition. Will do in next diff.
+  /**
+   * First try stateful message handlers with corresponding state. If no correct one exists,
+   * turn to stateless ones.
+   */
   public static function handleMessage($message, string $prevState) {
+    $stateManager = new StateManager();
+    /** @var StatefulMsgHandler[] $statefulHandlers */
+    $statefulHandlers = $stateManager->getStatefulHandlers($prevState);
+
+    $ret = NULL;
+    foreach ($statefulHandlers as $handler) {
+      try {
+        $ret = $handler->handle($message, $prevState);
+        // Once found a legitimate response, break.
+        break;
+      } catch (WrongMessageForCurrentStateException $e) {
+        continue;
+      }
+    }
+    if ($ret) {
+      return $ret;
+    }
+
+    // Turn to generic stateless handlers if no corresponding stateful handlers.
     $handler = NULL;
     switch ($message->MsgType) {
       case 'text':
-        $handler = new TextMsgHandler($message);
+        $handler = new TextMsgHandler();
         break;
       case 'voice':
-        $handler = new VoiceMsgHandler($message);
+        $handler = new VoiceMsgHandler();
         break;
       case 'image':
-        $handler = new ImageMsgHandler($message);
+        $handler = new ImageMsgHandler();
         break;
       default:
         return new Text(['content' => 'Message type not supported']);
     }
 
-    return $handler->handle();
+    return $handler->handle($message);
   }
 
 }
 
-class TextMsgHandler extends MsgHandler {
-  public function handle() {
-    $content = $this->message->Content;
-    // TODO: Do we need more than open ID for the user, like nickname?
-    $user = $this->message->FromUserName;  // Open ID.
+/**
+ * Interface for message handler with states, implemented under each feature class (such as Tracker).
+ */
+interface StatefulMsgHandler {
+  public function handle($message, string $currState);
+}
+
+/**
+ * Stateless message handler, which are agnostic about users' states.
+ */
+interface StatelessMsgHandler {
+  public function handle($message);
+}
+
+/*
+ * Implementation of stateless message handlers.
+ */
+
+class TextMsgHandler implements StatelessMsgHandler {
+  public function handle($message) {
+    $content = $message->Content;
+    $user = $message->FromUserName;  // Open ID.
 
     if (preg_match('/steam.*discount/', strtolower($content))) {
       return Steam::getSteamDiscounts();
@@ -68,14 +102,14 @@ class TextMsgHandler extends MsgHandler {
   }
 }
 
-class ImageMsgHandler extends MsgHandler {
-  public function handle() {
-    return new Text(['content' => 'received image: ' . $this->message->PicUrl]);
+class ImageMsgHandler implements StatelessMsgHandler {
+  public function handle($message) {
+    return new Text(['content' => 'received image: ' . $message->PicUrl]);
   }
 }
 
-class VoiceMsgHandler extends MsgHandler {
-  public function handle() {
-    return new Text(['content' => 'received voice: ' . $this->message->MediaId]);
+class VoiceMsgHandler implements StatelessMsgHandler {
+  public function handle($message) {
+    return new Text(['content' => 'received voice: ' . $message->MediaId]);
   }
 }

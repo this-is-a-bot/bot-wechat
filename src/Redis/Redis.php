@@ -24,9 +24,13 @@ class Redis {
 
   // MUST be called before using this class. Usually in top-level.
   public static function init() {
-    self::$client = new Client([
-        'host' => '127.0.0.1',
-    ]);
+    if (getenv('ENV') == 'HEROKU') {
+      self::$client = new Client(getenv('REDIS_URL'));
+    } else {
+      self::$client = new Client([
+          'host' => '127.0.0.1',
+      ]);
+    }
   }
 
   public static function getPrevState($user): string {

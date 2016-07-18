@@ -4,8 +4,8 @@ namespace BotWechat;
 
 include __DIR__ . '/../vendor/autoload.php';
 
-use BotWechat\Handler\MsgHandler;
 use BotWechat\Redis\Redis;
+use BotWechat\Handler\MsgHandler;
 use EasyWeChat\Foundation\Application;
 
 $options = [
