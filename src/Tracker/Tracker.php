@@ -23,9 +23,19 @@ class Tracker {
   public static function getTrackerPage(string $user) {
     // TODO: Call bot endpoint to fetch the web page url (empty if error).
     return new News([
-      'title' => 'Your Tracker!',
-      'description' => 'Description for the tracker',
-      'url' => '',
+        'title' => 'Your Tracker!',
+        'description' => 'Description for the tracker',
+        'url' => '',
     ]);
+  }
+
+  public static function createTracking(string $name, string $unit) {
+    // TODO: Not implemented.
+    return "createTracking(name: $name, unit: $unit)";
+  }
+
+  public static function markDone(int $catalogID, int $value): string {
+    // TODO: Not implemented.
+    return "markdown(catalog: $catalogID, value: $value)";
   }
 }
