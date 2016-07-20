@@ -2,7 +2,8 @@
     "name": "this-is-a-bot/bot-wechat",
     "require": {
         "overtrue/wechat": "~3.0",
-        "predis/predis": "^1.1"
+        "predis/predis": "^1.1",
+        "guzzlehttp/guzzle": "^6.2"
     },
     "autoload": {
         "psr-4": {

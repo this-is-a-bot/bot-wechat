@@ -18,6 +18,7 @@ class TrackerListingMsgHandler implements StatefulMsgHandler {
           "Can only take text message for current state: $currState");
     }
 
+    $user = $message->FromUserName;  // Open ID.
     $content = strtolower($message->Content);
     // Only accept messages of following formats:
     // - Single number indicating tracking item ID TODO: improve by having another mapping;
@@ -29,10 +30,11 @@ class TrackerListingMsgHandler implements StatefulMsgHandler {
           "Message format not recognized for current state: $currState");
     }
 
-    // 0 will be automatically converted to 1, consider it as a binary mark.
-    $val = count($parts) > 1 ? intval($parts[1]) : 0;
-    $resp = Tracker::markDone($catalogID, ($val ? $val : 1));
+    // 0 means no value is needed, consider it as a binary mark.
+    $val = count($parts) > 1 ? ((float) $parts[1]) : 0.0;
+    $resp = Tracker::markDoneInText($user, $catalogID, $val);
 
     return $resp;
   }
+
 }

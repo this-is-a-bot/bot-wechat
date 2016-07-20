@@ -90,7 +90,7 @@ class TextMsgHandler implements StatelessMsgHandler {
       $parts = preg_split('/\s+/', $content);
       switch (strtolower($parts[0])) {  // Wechat doesn't allow send white-space string.
         case "tt":  // Text-only tracker.
-          return Tracker::relayMessage($user, $content);
+          return Tracker::showTrackingInText($user);
           break;
         case "t":  // Web-page tracker.
           return Tracker::getTrackerPage($user);

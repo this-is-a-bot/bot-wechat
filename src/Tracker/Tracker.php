@@ -3,7 +3,7 @@
 namespace BotWechat\Tracker;
 
 use EasyWeChat\Message\{
-    News, Text
+    News
 };
 
 
@@ -14,10 +14,41 @@ use EasyWeChat\Message\{
 class Tracker {
 
   const APP = 'wechat';
+  const URL = 'http://a-b0t.herokuapp.com';
+  const INSTRUCTION_CREATING =
+      "Track something by typing '<name>, <(optional) unit>'\n" .
+      'For example, "weight, kg" or "read a book, page"';
 
-  public static function relayMessage(string $user, string $message) {
-    // TODO: Relay message to bot service, and return the response string (empty if error).
-    return new Text(['content' => 'relayMessage not implemented, ' . $user]);
+  private static $client = NULL;
+
+  private static function getClient() {
+    if (!self::$client) {
+      self::$client = new \GuzzleHttp\Client([
+          'base_uri' => self::URL
+      ]);
+    }
+    return self::$client;
+  }
+
+  public static function showTrackingInText(string $user) {
+    $c = self::getClient();
+    $r = $c->get('/tracker/listing/text', [
+        'query' => ['username' => $user, 'app' => self::APP],
+        'http_errors' => false,
+    ]);
+
+    $ret = NULL;
+    switch ($r->getStatusCode()) {
+      case 200:
+        $ret = (string) $r->getBody();
+        break;
+      case 404:
+        $ret = self::INSTRUCTION_CREATING;
+        break;
+      default:
+        $ret = 'ERROR: ' . (string) $r->getBody();
+    }
+    return $ret;
   }
 
   public static function getTrackerPage(string $user) {
@@ -29,13 +60,45 @@ class Tracker {
     ]);
   }
 
-  public static function createTracking(string $name, string $unit) {
-    // TODO: Not implemented.
-    return "createTracking(name: $name, unit: $unit)";
+  public static function createTrackingInText(string $user, string $name, string $unit) {
+    $c = self::getClient();
+    $r = $c->post('/tracker/listing/text', [
+        'form_params' => [
+            'username' => $user, 'app' => self::APP, 'name' => $name, 'unit' => $unit
+        ]
+    ]);
+
+    $ret = NULL;
+    switch ($r->getStatusCode()) {
+      case 200:
+        $ret = (string) $r->getBody();
+        break;
+      default:
+        $ret = 'ERROR: ' . (string) $r->getBody();
+    }
+    return $ret;
   }
 
-  public static function markDone(int $catalogID, int $value): string {
-    // TODO: Not implemented.
-    return "markdown(catalog: $catalogID, value: $value)";
+  public static function markDoneInText(string $user, int $catalogID, float $value): string {
+    $c = self::getClient();
+    $r = $c->post('/tracker/marking/text', [
+        'form_params' => [
+            'username' => $user, 'app' => self::APP,
+            'catalogID' => $catalogID, 'value' => $value
+        ]
+    ]);
+
+    $ret = NULL;
+    switch ($r->getStatusCode()) {
+      case 200:
+        $ret = (string) $r->getBody();
+        break;
+      case 404:
+        $ret = self::INSTRUCTION_CREATING;
+        break;
+      default:
+        $ret = 'ERROR: ' . (string) $r->getBody();
+    }
+    return $ret;
   }
 }
