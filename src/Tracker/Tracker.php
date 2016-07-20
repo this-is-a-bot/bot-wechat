@@ -24,7 +24,8 @@ class Tracker {
   private static function getClient() {
     if (!self::$client) {
       self::$client = new \GuzzleHttp\Client([
-          'base_uri' => self::URL
+          'base_uri' => self::URL,
+          'http_errors' => false,
       ]);
     }
     return self::$client;
@@ -34,7 +35,6 @@ class Tracker {
     $c = self::getClient();
     $r = $c->get('/tracker/listing/text', [
         'query' => ['username' => $user, 'app' => self::APP],
-        'http_errors' => false,
     ]);
 
     $ret = NULL;
