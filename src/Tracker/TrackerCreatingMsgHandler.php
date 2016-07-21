@@ -10,6 +10,7 @@ use BotWechat\Handler\WrongMessageForCurrentStateException;
  * Message handler after the server asks the user to create tracking items.
  */
 class TrackerCreatingMsgHandler implements StatefulMsgHandler {
+
   public function handle($message, string $currState) {
     // Only takes text message.
     if ($message->MsgType != 'text') {
@@ -17,6 +18,7 @@ class TrackerCreatingMsgHandler implements StatefulMsgHandler {
           "Can only take text message for current state: $currState");
     }
 
+    $user = $message->FromUserName;  // Open ID.
     $content = strtolower($message->Content);
     // Only accepts messages of following format (note they are separated by comma):
     // - 'read xx book, page'.
@@ -27,8 +29,9 @@ class TrackerCreatingMsgHandler implements StatefulMsgHandler {
     }
 
     list ($catalogName, $unit) = $parts;
-    $resp = Tracker::createTracking($catalogName, $unit);
+    $resp = Tracker::createTrackingInText($user, $catalogName, $unit);
 
     return $resp;
   }
+
 }
