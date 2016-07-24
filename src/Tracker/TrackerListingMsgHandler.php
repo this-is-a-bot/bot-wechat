@@ -3,7 +3,9 @@
 namespace BotWechat\Tracker;
 
 use BotWechat\Handler\StatefulMsgHandler;
+use BotWechat\Handler\StateManager;
 use BotWechat\Handler\WrongMessageForCurrentStateException;
+use BotWechat\Redis\Redis;
 
 
 /**
@@ -19,10 +21,17 @@ class TrackerListingMsgHandler implements StatefulMsgHandler {
     }
 
     $user = $message->FromUserName;  // Open ID.
-    $content = strtolower($message->Content);
+    $content = trim(strtolower($message->Content));
     // Only accept messages of following formats:
+    // - String 'new' or 'n' to create new tracking catalogs;
     // - Single number indicating tracking item ID TODO: improve by having another mapping;
     // - Or plus a numeric value.
+
+    if ($content == 'new' || $content == 'n') {
+      Redis::setPrevState($user, StateManager::TRACKING_CREATING);
+      return Tracker::INSTRUCTION_CREATING;
+    }
+
     $parts = preg_split('/\s+/', $content);
     $catalogID = intval($parts[0]);
     if ($catalogID == 0) {

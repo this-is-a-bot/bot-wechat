@@ -18,7 +18,7 @@ function user_state_key(string $user): string {
 
 class Redis {
 
-  const USERNAME_TTL = 60 * 60 * 24;  // One day.
+  const USER_STATE_TTL = 60 * 5;  // 5 min.
 
   private static $client;
 
@@ -36,6 +36,11 @@ class Redis {
   public static function getPrevState($user): string {
     $k = user_state_key($user);
     return self::$client->get($k) ?? '';  // Conform to type hinting.
+  }
+
+  public static function setPrevState($user, $state) {
+    $k = user_state_key($user);
+    self::$client->setex($k, self::USER_STATE_TTL, $state);
   }
 
 }
