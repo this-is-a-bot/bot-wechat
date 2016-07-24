@@ -2,6 +2,8 @@
 
 namespace BotWechat\Tracker;
 
+use BotWechat\Handler\StateManager;
+use BotWechat\Redis\Redis;
 use EasyWeChat\Message\{
     News
 };
@@ -40,9 +42,11 @@ class Tracker {
     $ret = NULL;
     switch ($r->getStatusCode()) {
       case 200:
+        Redis::setPrevState($user, StateManager::TRACKER_LISTING);
         $ret = (string) $r->getBody();
         break;
       case 404:
+        Redis::setPrevState($user, StateManager::TRACKING_CREATING);
         $ret = self::INSTRUCTION_CREATING;
         break;
       default:
@@ -71,6 +75,8 @@ class Tracker {
     $ret = NULL;
     switch ($r->getStatusCode()) {
       case 200:
+        // Creation succeeds. Back to listing state.
+        Redis::setPrevState($user, StateManager::TRACKER_LISTING);
         $ret = (string) $r->getBody();
         break;
       default:
@@ -91,9 +97,13 @@ class Tracker {
     $ret = NULL;
     switch ($r->getStatusCode()) {
       case 200:
+        // Marking succeeds. Back to listing state.
+        Redis::setPrevState($user, StateManager::TRACKER_LISTING);
         $ret = (string) $r->getBody();
         break;
       case 404:
+        // Somehow didn't find the created tracking.
+        Redis::setPrevState($user, StateManager::TRACKING_CREATING);
         $ret = self::INSTRUCTION_CREATING;
         break;
       default:
