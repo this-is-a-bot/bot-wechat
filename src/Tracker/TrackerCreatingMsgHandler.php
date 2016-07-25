@@ -19,7 +19,7 @@ class TrackerCreatingMsgHandler implements StatefulMsgHandler {
     }
 
     $user = $message->FromUserName;  // Open ID.
-    $content = strtolower($message->Content);
+    $content = $message->Content;
     // Only accepts messages of following format (note they are separated by comma):
     // - 'read xx book, page'.
     $parts = array_map('trim', explode(',', $content));
